@@ -86,7 +86,7 @@ def senato_callback(query, data, message):
 
 
 @bot.callback("info")
-def info_callback(_, __, message):
+def info_callback(query, data, message):
     keyboard = botogram.Buttons()
     keyboard[0].url("👤 Sviluppatore", "https://t.me/MarcoBuster")
     keyboard[0].url("👥 Gruppo di supporto", "https://t.me/MarcoBusterGroup")
