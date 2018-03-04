@@ -45,7 +45,7 @@ def analytics(message):
 def start(message):
     keyboard = botogram.Buttons()
     keyboard[0].callback('🔴 Camera dei Deputati', 'camera')
-    keyboard[1].callback('🔵 Senato della Repubblica', 'camera')
+    keyboard[1].callback('🔵 Senato della Repubblica', 'senato')
     keyboard[2].callback('ℹ️ Informazioni', 'info')
     message.chat.send(
         "<b>🗳 Elezioni politiche del 4 marzo 2018</b>"
