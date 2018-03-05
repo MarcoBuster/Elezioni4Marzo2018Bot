@@ -21,6 +21,10 @@
 
 import json
 import requests
+#import requests_cache
+import redis
+import config
+#requests_cache.install_cache('ss', expire_after=60)
 
 from ..constants import *
 
@@ -61,9 +65,12 @@ class ScrutiniesView:
             self.rows.append(ScrutiniesRow(row))
 
     def reload(self):
-        r = requests.get(self.url, headers=HEADERS)
+        re = redis.StrictRedis(host=config.REDIS_HOST,
+                               port=config.REDIS_PORT,
+                               db=config.REDIS_DB,
+                               password=config.REDIS_PASSWORD)
         try:
-            self.raw = r.json()
+            self.raw = json.loads(re.hget("dati", "scrutiniessen").decode("utf-8"))
         except json.decoder.JSONDecodeError:
             raise
 
