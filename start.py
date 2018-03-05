@@ -18,8 +18,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-
+import logging
 from src import main
 
 if __name__ == '__main__':
-    main.bot.run()
+    logging.basicConfig(level=20,
+                        format="%(asctime)s:%(levelname)s:%(message)s")
+    main.bot.process_backlog = True
+    main.bot.run(workers=5)

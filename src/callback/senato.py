@@ -54,11 +54,13 @@ def process(query, data, message):
                 affluence_23=affluence.elements[0].affluence_23,
                 received_sections=scrutinies.received_sections,
                 sections=scrutinies.sections,
+#                sections_percentage=round(int(scrutinies.received_sections.replace('.', ''))/int(scrutinies.sections.replace('.','')),2),
                 last_update=datetime.now().strftime("%H:%M %d/%m/%y")
             ),
             syntax="HTML", preview=False, attach=keyboard
         )
         if data == 'update':
             query.notify('✅ Informazioni aggiornate')
-    except:
+    except Exception as e:
+        print(e)
         query.notify('❎ Le informazioni sono rimaste invariate', alert=True)

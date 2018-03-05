@@ -22,27 +22,62 @@
 import botogram
 import redis
 from datetime import datetime
+import requests
 
 from .callback import camera, senato
+from .constants import *
 import config
 
 bot = botogram.create(config.TOKEN)
-r = redis.StrictRedis(host=config.REDIS_HOST,
-                      port=config.REDIS_PORT,
-                      db=config.REDIS_DB,
-                      password=config.REDIS_PASSWORD)
+
+@bot.timer(15)
+def timer(bot):
+    print("timer")
+    re = redis.StrictRedis(host=config.REDIS_HOST,
+                          port=config.REDIS_PORT,
+                          db=config.REDIS_DB,
+                          password=config.REDIS_PASSWORD)
+    "Affluenza camera"
+    rhash="dati"
+    url = HOST + '/votanti/votanti20180304/{href}'.format(href="votantiCI")
+    r = requests.get(url, headers=HEADERS)
+    re.hset(rhash, "affluencecam",r.text)
+
+    "scrutini camera"
+    url = HOST + '/politiche/camera20180304/scrutiniCI'
+    r = requests.get(url, headers=HEADERS)
+    re.hset(rhash, "scrutiniescam", r.text)
+
+    "Affluenza senato"
+    rhash = "dati"
+    url = HOST + '/votanti/votanti20180304/{href}'.format(href="votantiSI")
+    r = requests.get(url, headers=HEADERS)
+    re.hset(rhash, "affluencesen", r.text)
+
+    "scrutini senato"
+    url = HOST + '/politiche/senato20180304/scrutiniSI'
+    r = requests.get(url, headers=HEADERS)
+    re.hset(rhash, "scrutiniessen", r.text)
 
 
 @bot.before_processing
 def analytics(message):
+    print("redis",message.sender.id)
+    r = redis.StrictRedis(host=config.REDIS_HOST,
+                      port=config.REDIS_PORT,
+                      db=config.REDIS_DB,
+                      password=config.REDIS_PASSWORD)
     rhash = 'user:' + str(message.sender.id)
     r.hset(rhash, 'id', message.sender.id)
     r.hset(rhash, 'username', message.sender.username)
     r.hset(rhash, 'last_access', str(datetime.now()))
+    print(message.sender.id,datetime.now())
+
 
 
 @bot.command("start")
 def start(message):
+    print("start",message.sender.id)
     keyboard = botogram.Buttons()
     keyboard[0].callback('🔴 Camera dei Deputati', 'camera')
     keyboard[1].callback('🔵 Senato della Repubblica', 'senato')
@@ -53,13 +88,15 @@ def start(message):
         "i risultati delle elezioni politiche di Camera e Senato"
         "\n\nℹ️ I dati sono aggiornati automaticamente dal "
         "<a href=\"http://elezioni.interno.gov.it/\">"
-        "sito del Ministero dell'Interno</a>",
+        "sito del Ministero dell'Interno</a>"
+        "\nBot realizzato in collaborazione con @ultimora",
         syntax="HTML", preview=False, attach=keyboard,
     )
 
 
 @bot.callback('home')
-def home_callback(message):
+def home_callback(message,query):
+    print("home",query.sender.id)
     keyboard = botogram.Buttons()
     keyboard[0].callback('🔴 Camera dei Deputati', 'camera')
     keyboard[1].callback('🔵 Senato della Repubblica', 'senato')
@@ -70,23 +107,27 @@ def home_callback(message):
         "i risultati delle elezioni politiche di Camera e Senato"
         "\n\nℹ️ I dati sono aggiornati automaticamente dal "
         "<a href=\"http://elezioni.interno.gov.it/\">"
-        "sito del Ministero dell'Interno</a>",
+        "sito del Ministero dell'Interno</a>"
+        "\nBot realizzato in collaborazione con @ultimora",
         syntax="HTML", preview=False, attach=keyboard,
     )
 
 
 @bot.callback("camera")
 def camera_callback(query, data, message):
+    print("camera",query.sender.id)
     camera.process(query, data, message)
 
 
 @bot.callback("senato")
 def senato_callback(query, data, message):
+    print("senato",query.sender.id)
     senato.process(query, data, message)
 
 
 @bot.callback("info")
 def info_callback(query, data, message):
+    print("info",query.sender.id)
     keyboard = botogram.Buttons()
     keyboard[0].url("👤 Sviluppatore", "https://t.me/MarcoBuster")
     keyboard[0].url("👥 Gruppo di supporto", "https://t.me/MarcoBusterGroup")

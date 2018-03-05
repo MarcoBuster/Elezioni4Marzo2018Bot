@@ -21,6 +21,11 @@
 
 import json
 import requests
+import redis
+import config
+#import requests_cache
+#requests_cache.install_cache('ac', expire_after=60)
+
 
 from ..constants import *
 
@@ -57,8 +62,11 @@ class AffluenceView:
             self.elements.append(AffluenceElement(element))
 
     def reload(self):
-        r = requests.get(self.url, headers=HEADERS)
+        re = redis.StrictRedis(host=config.REDIS_HOST,
+                               port=config.REDIS_PORT,
+                               db=config.REDIS_DB,
+                               password=config.REDIS_PASSWORD)
         try:
-            self.raw = r.json()
+            self.raw = json.loads(re.hget("dati", "affluencecam").decode("utf-8"))
         except json.decoder.JSONDecodeError:
             raise
